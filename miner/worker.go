@@ -1110,19 +1110,18 @@ func (w *worker) generateWork(params *generateParams) *newPayloadResult {
 // commitWork generates several new sealing tasks based on the parent block
 // and submit them to the sealer.
 func (w *worker) commitWork(interrupt *atomic.Int32, timestamp int64) {
-	
-	 // 获取交易池中的待处理交易数量
-	 pendingCount := len(w.eth.TxPool().Pending(txpool.PendingFilter{MinTip: w.tip}))
 
-	 // 设置最小交易数量阈值
-	 minTxCount := 1
- 
-	 // 检查当前的交易数量
-	 if pendingCount < minTxCount {
-		 log.Info("MinTxCount 1,Not enough transactions in pool to fill block")
-		 return // 返回，避免填充交易
-	 }
+	// 获取交易池中的待处理交易数量
+	pendingCount := len(w.eth.TxPool().Pending(txpool.PendingFilter{MinTip: w.tip}))
 
+	// 设置最小交易数量阈值
+	minTxCount := 1
+
+	// 检查当前的交易数量
+	if pendingCount < minTxCount {
+		log.Info("MinTxCount 1,Not enough transactions in pool to fill block")
+		return // 返回，避免填充交易
+	}
 
 	// Abort committing if node is still syncing
 	if w.syncing.Load() {
