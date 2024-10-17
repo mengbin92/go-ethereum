@@ -1110,19 +1110,6 @@ func (w *worker) generateWork(params *generateParams) *newPayloadResult {
 // commitWork generates several new sealing tasks based on the parent block
 // and submit them to the sealer.
 func (w *worker) commitWork(interrupt *atomic.Int32, timestamp int64) {
-
-	// 获取交易池中的待处理交易数量
-	pendingCount := len(w.eth.TxPool().Pending(txpool.PendingFilter{MinTip: w.tip}))
-
-	// 设置最小交易数量阈值
-	minTxCount := 1
-
-	// 检查当前的交易数量
-	if pendingCount < minTxCount {
-		log.Info("MinTxCount 1,Not enough transactions in pool to fill block")
-		return // 返回，避免填充交易
-	}
-
 	// Abort committing if node is still syncing
 	if w.syncing.Load() {
 		return
@@ -1197,6 +1184,10 @@ func (w *worker) commit(env *environment, interval func(), update bool, start ti
 		// Create a local environment copy, avoid the data race with snapshot state.
 		// https://github.com/ethereum/go-ethereum/issues/24299
 		env := env.copy()
+		if env.tcount < int(w.chainConfig.Clique.MinTxs) {
+			log.Info("Not enough transactions in pool to fill block", "MinTxCount", w.chainConfig.Clique.MinTxs)
+			return errors.New("not enough transactions in pool to fill block")
+		}
 		// Withdrawals are set to nil here, because this is only called in PoW.
 		block, err := w.engine.FinalizeAndAssemble(w.chain, env.header, env.state, env.txs, nil, env.receipts, nil)
 		if err != nil {

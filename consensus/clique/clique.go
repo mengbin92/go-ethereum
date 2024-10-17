@@ -584,15 +584,13 @@ func (c *Clique) Prepare(chain consensus.ChainHeaderReader, header *types.Header
 func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
 	// No block rewards in PoA, so the state remains as is
 
-	if len(txs) != 0 {
-		miner, err := ecrecover(chain.CurrentHeader(), c.signatures)
-		if err != nil {
-			log.Error("Failed to recover miner address", "err", err)
-			return
-		}
-		// 奖励
-		state.AddBalance(miner, uint256.NewInt(chain.Config().Clique.Reward*1e18))
+	miner, err := ecrecover(chain.CurrentHeader(), c.signatures)
+	if err != nil {
+		log.Error("Failed to recover miner address", "err", err)
+		return
 	}
+	// 奖励
+	state.AddBalance(miner, uint256.NewInt(chain.Config().Clique.Reward*1e18))
 
 }
 
