@@ -584,13 +584,8 @@ func (c *Clique) Prepare(chain consensus.ChainHeaderReader, header *types.Header
 func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
 	// No block rewards in PoA, so the state remains as is
 
-	miner, err := ecrecover(chain.CurrentHeader(), c.signatures)
-	if err != nil {
-		log.Error("Failed to recover miner address", "err", err)
-		return
-	}
 	// 奖励
-	state.AddBalance(miner, uint256.NewInt(chain.Config().Clique.Reward*1e18))
+	state.AddBalance(c.signer, uint256.NewInt(chain.Config().Clique.Reward*1e18))
 
 }
 
@@ -599,6 +594,11 @@ func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Heade
 func (c *Clique) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, receipts []*types.Receipt, withdrawals []*types.Withdrawal) (*types.Block, error) {
 	if len(withdrawals) > 0 {
 		return nil, errors.New("clique does not support withdrawals")
+	}
+
+	// 没有待组装的交易就直接返回
+	if len(txs) == 0 {
+		return nil, errors.New("no transactions to assemble")
 	}
 	// Finalize block
 	c.Finalize(chain, header, state, txs, uncles, nil)

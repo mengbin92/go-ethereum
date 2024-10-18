@@ -1184,10 +1184,6 @@ func (w *worker) commit(env *environment, interval func(), update bool, start ti
 		// Create a local environment copy, avoid the data race with snapshot state.
 		// https://github.com/ethereum/go-ethereum/issues/24299
 		env := env.copy()
-		if env.header.Number.Uint64() > 1 && env.tcount < int(w.chainConfig.Clique.MinTxs) {
-			log.Info("Not enough transactions in pool to fill block", "MinTxCount", w.chainConfig.Clique.MinTxs)
-			return errors.New("not enough transactions in pool to fill block")
-		}
 		// Withdrawals are set to nil here, because this is only called in PoW.
 		block, err := w.engine.FinalizeAndAssemble(w.chain, env.header, env.state, env.txs, nil, env.receipts, nil)
 		if err != nil {
