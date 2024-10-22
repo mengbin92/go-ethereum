@@ -596,10 +596,6 @@ func (c *Clique) FinalizeAndAssemble(chain consensus.ChainHeaderReader, header *
 		return nil, errors.New("clique does not support withdrawals")
 	}
 
-	// 没有待组装的交易就直接返回
-	if len(txs) == 0 {
-		return nil, errors.New("no transactions to assemble")
-	}
 	// Finalize block
 	c.Finalize(chain, header, state, txs, uncles, nil)
 
