@@ -1096,6 +1096,12 @@ func (w *worker) generateWork(params *generateParams) *newPayloadResult {
 			log.Warn("Block building is interrupted", "allowance", common.PrettyDuration(w.newpayloadTimeout))
 		}
 	}
+
+	// If there are no transactions to commit, return an error.
+	if len(work.txs) == 0 && work.header.Number.Uint64() > 0 {
+		return &newPayloadResult{err: errors.New("no transactions to commit")}
+	}
+
 	block, err := w.engine.FinalizeAndAssemble(w.chain, work.header, work.state, work.txs, nil, work.receipts, params.withdrawals)
 	if err != nil {
 		return &newPayloadResult{err: err}
@@ -1185,7 +1191,7 @@ func (w *worker) commit(env *environment, interval func(), update bool, start ti
 		// https://github.com/ethereum/go-ethereum/issues/24299
 		env := env.copy()
 
-		if len(env.txs) == 0{
+		if len(env.txs) == 0 && env.header.Number.Uint64() > 0 {
 			return errors.New("no transactions to commit")
 		}
 

@@ -43,7 +43,6 @@ import (
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/go-ethereum/trie"
-	"github.com/holiman/uint256"
 	"golang.org/x/crypto/sha3"
 )
 
@@ -583,10 +582,6 @@ func (c *Clique) Prepare(chain consensus.ChainHeaderReader, header *types.Header
 // consensus rules in clique, do nothing here.
 func (c *Clique) Finalize(chain consensus.ChainHeaderReader, header *types.Header, state *state.StateDB, txs []*types.Transaction, uncles []*types.Header, withdrawals []*types.Withdrawal) {
 	// No block rewards in PoA, so the state remains as is
-
-	// 奖励
-	state.AddBalance(c.signer, uint256.NewInt(chain.Config().Clique.Reward*1e18))
-
 }
 
 // FinalizeAndAssemble implements consensus.Engine, ensuring no uncles are set,
